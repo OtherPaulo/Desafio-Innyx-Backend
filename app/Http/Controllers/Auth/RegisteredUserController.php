@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 
 class RegisteredUserController extends Controller
@@ -20,22 +21,35 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): Response
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        try {
+            Log::info('Registration request received', $request->all());
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            ]);
 
-        event(new Registered($user));
+            Log::info('Validation passed');
 
-        Auth::login($user);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        return response()->noContent();
+            Log::info('User created', ['user_id' => $user->id]);
+
+            event(new Registered($user));
+
+            Auth::login($user);
+
+            Log::info('User logged in', ['user_id' => $user->id]);
+
+            return response()->noContent();
+        } catch (\Exception $e) {
+            Log::error('Error during registration', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Internal Server Error'], 500);
+        }
     }
 }
