@@ -10,12 +10,13 @@ class Produto extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'description',
-        'price',
-        'expiration_date',
-        'image',
+        'name', 
+        'description', 
+        'price', 
+        'expiration_date', 
+        'image', 
         'categoria_id',
+        'user_id',
     ];
 
     public function categoria()

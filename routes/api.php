@@ -1,37 +1,15 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\ProdutoController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProdutoController;
-use App\Http\Controllers\CategoriaController;
 
-/*
-|---------------------------------------------------------------------------
-| API Routes
-|---------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
-Route::prefix('categorias')->group(function () {
-    Route::get('/', [CategoriaController::class, 'index']); 
-    Route::post('/', [CategoriaController::class, 'store']); 
-    Route::get('/{id}', [CategoriaController::class, 'show']);
-    Route::put('/{id}', [CategoriaController::class, 'update']); 
-    Route::delete('/{id}', [CategoriaController::class, 'destroy']); 
-});
-
-Route::prefix('produtos')->group(function () {
-    Route::get('/', [ProdutoController::class, 'index']); 
-    Route::post('/', [ProdutoController::class, 'store']); 
-    Route::get('/{id}', [ProdutoController::class, 'show']);
-    Route::put('/{id}', [ProdutoController::class, 'update']);
-    Route::delete('/{id}', [ProdutoController::class, 'destroy']);
-});
+Route::get('categorias', [CategoriaController::class, 'index']);
+Route::apiResource('produtos', ProdutoController::class);
